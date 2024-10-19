@@ -28,6 +28,7 @@ Week 4:
 Research and integrate the betting API for real-time odds
 <br>
 Set up a method to gather GoldDerby predictions (either through web scraping or any available API)
+<br>
 Week 5:
 Buffer week to ensure accurate odds and prediction data is being retrieved
 <br>
