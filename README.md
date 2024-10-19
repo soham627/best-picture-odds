@@ -25,21 +25,27 @@ NewsAPI: to find and display news articles related to each movie
 Execution Plan:
 <br>
 Week 4:
+<br>
 Research and integrate the betting API for real-time odds
 <br>
 Set up a method to gather GoldDerby predictions (either through web scraping or any available API)
 <br>
 Week 5:
+<br>
 Buffer week to ensure accurate odds and prediction data is being retrieved
 <br>
 Week 6:
+<br>
 Implement comparison logic to highlight discrepancies between betting odds and expert predictions
+<br>
 Add OMDb/IMDb API integration to fetch movie details for each nominee
 <br>
 Week 7:
+<br>
 Integrate NewsAPI to display the latest news articles about each movie.
 <br>
 Week 8:
+<br>
 Finalize the project by refining the UI/UX, testing data retrieval, and deploying the app
 <br>
 
