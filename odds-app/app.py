@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
+app.config['ENV'] = os.getenv('FLASK_ENV', 'production')
 
 uri = os.environ.get('DATABASE_URL')
 if uri and uri.startswith("postgres://"):
@@ -23,4 +24,4 @@ def index():
     return "Hello, Flask!"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True if app.config['ENV'] == 'development' else False)
