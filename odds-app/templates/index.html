@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/2.1.8/css/dataTables.dataTables.min.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script type="text/javascript" charset="utf8" src="//cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+</head>
+<body>
+    <h2>Movies Betting and Probabilities</h2>
+    <div>
+    {{ tables[0] | safe | replace('\n', '') }}
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.data').DataTable({
+                "createdRow": function(row, data, dataIndex){
+                    var diff = parseFloat(data[data.length - 1]);
+                    if (diff > 10) {
+                        $(row).find('td:eq(' + (data.length - 1) + ')').css('background-color', 'red').css('color', 'white');
+                    } else if (diff < -10) {
+                        $(row).find('td:eq(' + (data.length - 1) + ')').css('background-color', 'green').css('color', 'white');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

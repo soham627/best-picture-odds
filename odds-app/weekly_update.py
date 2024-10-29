@@ -204,7 +204,7 @@ def find_odds_for_movie(movie_name, soup):
     return odds_value
 
 weekly_df['betting_odds'] = weekly_df['Movie Name'].apply(lambda name: find_odds_for_movie(name, soup))
-weekly_df['betting_pct'] = weekly_df['betting_odds'].apply(lambda x: odds_to_prob(x) if x != 'N/A' else None)
+weekly_df['betting_pct'] = weekly_df['betting_odds'].apply(lambda x: int(odds_to_prob(x)) if x != 'N/A' else None)
 
 
 # Save to database
