@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h2>{{ movie_stats['name'] }}</h2>
+    <p><strong>Director:</strong> {{ movie_stats['Director'] }}</p>
+    <p><strong>Released:</strong> {{ movie_stats['Released'] }}</p>
+    <p><strong>Actors:</strong> {{ movie_stats['Actors'] }}</p>
+    <p><strong>Plot:</strong> {{ movie_stats['Plot'] }}</p>
+
+    <div id="chart"></div>
+
+    <script>
+        const chartData = {{ chart_data | safe }};
+
+        const expertTrend = {
+            x: chartData.map(row => row.Date),
+            y: chartData.map(row => row.imp_prob_expert),
+            mode: 'lines',
+            name: 'Experts Probability'
+        };
+        const userTrend = {
+            x: chartData.map(row => row.Date),
+            y: chartData.map(row => row.imp_prob_user),
+            mode: 'lines',
+            name: 'Users Probability'
+        };
+        const star24Trend = {
+            x: chartData.map(row => row.Date),
+            y: chartData.map(row => row.imp_prob_star24),
+            mode: 'lines',
+            name: 'Star24 Probability'
+        };
+        const bettingTrend = {
+            x: chartData.map(row => row.Date),
+            y: chartData.map(row => row.betting_pct),
+            mode: 'lines',
+            name: 'Betting Probability'
+        };
+
+        const layout = {
+            title: 'Implied Probabilities Over Time',
+            xaxis: { title: 'Date' },
+            yaxis: { title: 'Probability (%)' }
+        };
+
+        Plotly.newPlot('chart', [expertTrend, userTrend, star24Trend, bettingTrend], layout);
+    </script>
+</body>
+</html>

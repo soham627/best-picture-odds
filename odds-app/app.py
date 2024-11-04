@@ -51,12 +51,35 @@ def index():
         lambda row: "Unavailable" if row['betting_pct'] == "Unavailable" or pd.isna(row['imp_prob_star24']) else row[
             'Difference'],axis=1)
 
+    merged_df['Movie Name'] = merged_df['Movie Name'].apply(lambda x: f'<a href="/movie/{x}">{x}</a>')
     merged_df['imp_prob_expert'] = merged_df['imp_prob_expert'].apply(to_pct)
     merged_df['imp_prob_user'] = merged_df['imp_prob_user'].apply(to_pct)
     merged_df['imp_prob_star24'] = merged_df['imp_prob_star24'].apply(to_pct)
     merged_df['betting_pct'] = merged_df['betting_pct'].apply(to_pct)
     merged_df = merged_df[["Movie Name", 'imp_prob_expert', 'imp_prob_user', 'imp_prob_star24', 'betting_pct', "Date", 'Difference']]
-    return render_template('index.html', tables=[merged_df.to_html(classes='data', index=False)])
+    table_html = merged_df.to_html(classes='data', index=False, escape=False)
+    return render_template('index.html', table=table_html)
+
+@app.route('/movie/<movie_name>')
+def movie_page(movie_name):
+    movie_stats_query = f'SELECT * FROM movie_stats WHERE "Movie Name" = %s'
+    movie_stats_df = pd.read_sql(movie_stats_query, db.engine, params=[(movie_name,)])
+
+    if movie_stats_df.empty:
+        return "Movie not found", 404
+
+    probabilities_query = f"""
+        SELECT "Date", "imp_prob_expert", "imp_prob_user", "imp_prob_star24", "betting_pct"
+        FROM goldderby
+        WHERE "Movie Name" = %s
+        ORDER BY "Date"
+    """
+    probabilities_df = pd.read_sql(probabilities_query, db.engine, params=[(movie_name,)])
+    probabilities_json = probabilities_df.to_json(orient='records')
+
+    return render_template('movie.html', movie_stats=movie_stats_df.iloc[0], chart_data=probabilities_json)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True if app.config['ENV'] == 'development' else False)
