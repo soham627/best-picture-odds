@@ -52,13 +52,53 @@ def index():
             'Difference'],axis=1)
 
     merged_df['Movie Name'] = merged_df['Movie Name'].apply(lambda x: f'<a href="/movie/{x}">{x}</a>')
-    merged_df['imp_prob_expert'] = merged_df['imp_prob_expert'].apply(to_pct)
-    merged_df['imp_prob_user'] = merged_df['imp_prob_user'].apply(to_pct)
-    merged_df['imp_prob_star24'] = merged_df['imp_prob_star24'].apply(to_pct)
-    merged_df['betting_pct'] = merged_df['betting_pct'].apply(to_pct)
-    merged_df = merged_df[["Movie Name", 'imp_prob_expert', 'imp_prob_user', 'imp_prob_star24', 'betting_pct', "Date", 'Difference']]
+    merged_df['Experts Odds'] = merged_df['imp_prob_expert'].apply(to_pct)
+    merged_df['GoldDerby Users Odds'] = merged_df['imp_prob_user'].apply(to_pct)
+    merged_df['All Star Users Odds'] = merged_df['imp_prob_star24'].apply(to_pct)
+    merged_df['Betting Odds'] = merged_df['betting_pct'].apply(to_pct)
+    merged_df = merged_df[["Movie Name", 'Experts Odds', 'GoldDerby Users Odds', 'All Star Users Odds', 'Betting Odds', "Date", 'Difference']]
     table_html = merged_df.to_html(classes='data', index=False, escape=False)
     return render_template('index.html', table=table_html)
+
+@app.route('/win_votes_table')
+def win_votes_table():
+    movie_stats_query = "SELECT * FROM movie_stats"
+    movie_stats_df = pd.read_sql(movie_stats_query, db.engine)
+
+    goldderby_query = """
+            SELECT "Movie Name", pct_vote_expert, pct_vote_user, pct_vote_star24, betting_pct, "Date"
+            FROM goldderby
+            WHERE "Date" = (SELECT MAX("Date") FROM goldderby)
+        """
+    goldderby_df = pd.read_sql(goldderby_query, db.engine)
+
+    merged_df = pd.merge(movie_stats_df, goldderby_df, left_on="Movie Name", right_on="Movie Name", how="inner")
+
+    def format_value(value):
+        if pd.isna(value):
+            return "Unavailable"
+        return int(value)
+
+    def to_pct(value):
+        if isinstance(value, int):
+            return f"{value}%"
+        return value
+
+
+    merged_df['betting_pct'] = merged_df['betting_pct'].apply(format_value)
+    merged_df['Difference'] = merged_df['pct_vote_star24'].fillna(0) - merged_df['betting_pct'].replace("Unavailable",0)
+    merged_df['Difference'] = merged_df.apply(
+        lambda row: "Unavailable" if row['betting_pct'] == "Unavailable" or pd.isna(row['pct_vote_star24']) else row[
+            'Difference'],axis=1)
+
+    merged_df['Movie Name'] = merged_df['Movie Name'].apply(lambda x: f'<a href="/movie/{x}">{x}</a>')
+    merged_df['Experts Votes (%)'] = merged_df['pct_vote_expert'].apply(to_pct)
+    merged_df['GoldDerby Users Votes (%)'] = merged_df['pct_vote_user'].apply(to_pct)
+    merged_df['All Star Users Votes (%)'] = merged_df['pct_vote_star24'].apply(to_pct)
+    merged_df['Betting Odds'] = merged_df['betting_pct'].apply(to_pct)
+    merged_df = merged_df[["Movie Name", 'Experts Votes (%)', 'GoldDerby Users Votes (%)', 'All Star Users Votes (%)', 'Betting Odds', "Date", 'Difference']]
+    table_html = merged_df.to_html(classes='data', index=False, escape=False)
+    return render_template('win_votes.html', table=table_html)
 
 @app.route('/movie/<movie_name>')
 def movie_page(movie_name):

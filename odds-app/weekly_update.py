@@ -168,7 +168,14 @@ api_response = requests.post(
         "browserHtml": True,
     },
 )
-browser_html = api_response.json()["browserHtml"]
+response_json = api_response.json()
+if "browserHtml" in response_json:
+    browser_html = response_json["browserHtml"]
+else:
+    print("Key 'browserHtml' not found in the response. Full response:")
+    print(response_json)
+
+
 soup = BeautifulSoup(browser_html, 'html.parser')
 
 title_mapping = {
@@ -204,7 +211,7 @@ def find_odds_for_movie(movie_name, soup):
     return odds_value
 
 weekly_df['betting_odds'] = weekly_df['Movie Name'].apply(lambda name: find_odds_for_movie(name, soup))
-weekly_df['betting_pct'] = weekly_df['betting_odds'].apply(lambda x: int(odds_to_prob(x)) if x != 'N/A' else None)
+weekly_df['betting_pct'] = weekly_df['betting_odds'].apply(lambda x: int(odds_to_prob(x)) if x != 'N/A' and odds_to_prob(x) is not None else None)
 
 
 # Save to database
