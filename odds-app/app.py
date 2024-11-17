@@ -47,7 +47,7 @@ def index():
 
     merged_df['betting_pct'] = merged_df['betting_pct'].apply(format_value)
     merged_df['Difference'] = merged_df['imp_prob_star24'].fillna(0) - merged_df['betting_pct'].replace("Unavailable",0)
-    merged_df['Difference'] = merged_df.apply(
+    merged_df['Difference (Betting Odds vs. All Star)'] = merged_df.apply(
         lambda row: "Unavailable" if row['betting_pct'] == "Unavailable" or pd.isna(row['imp_prob_star24']) else row[
             'Difference'],axis=1)
 
@@ -56,9 +56,11 @@ def index():
     merged_df['GoldDerby Users Odds'] = merged_df['imp_prob_user'].apply(to_pct)
     merged_df['All Star Users Odds'] = merged_df['imp_prob_star24'].apply(to_pct)
     merged_df['Betting Odds'] = merged_df['betting_pct'].apply(to_pct)
-    merged_df = merged_df[["Movie Name", 'Experts Odds', 'GoldDerby Users Odds', 'All Star Users Odds', 'Betting Odds', "Date", 'Difference']]
+    latest_date = merged_df["Date"].iloc[0]
+    merged_df = merged_df[["Movie Name", 'Experts Odds', 'GoldDerby Users Odds', 'All Star Users Odds', 'Betting Odds', 'Difference (Betting Odds vs. All Star)']]
     table_html = merged_df.to_html(classes='data', index=False, escape=False)
-    return render_template('index.html', table=table_html)
+
+    return render_template('index.html', table=table_html, latest_date=latest_date)
 
 @app.route('/win_votes_table')
 def win_votes_table():
@@ -87,7 +89,7 @@ def win_votes_table():
 
     merged_df['betting_pct'] = merged_df['betting_pct'].apply(format_value)
     merged_df['Difference'] = merged_df['pct_vote_star24'].fillna(0) - merged_df['betting_pct'].replace("Unavailable",0)
-    merged_df['Difference'] = merged_df.apply(
+    merged_df['Difference (Betting Odds vs. All Star)'] = merged_df.apply(
         lambda row: "Unavailable" if row['betting_pct'] == "Unavailable" or pd.isna(row['pct_vote_star24']) else row[
             'Difference'],axis=1)
 
@@ -96,9 +98,10 @@ def win_votes_table():
     merged_df['GoldDerby Users Votes (%)'] = merged_df['pct_vote_user'].apply(to_pct)
     merged_df['All Star Users Votes (%)'] = merged_df['pct_vote_star24'].apply(to_pct)
     merged_df['Betting Odds'] = merged_df['betting_pct'].apply(to_pct)
-    merged_df = merged_df[["Movie Name", 'Experts Votes (%)', 'GoldDerby Users Votes (%)', 'All Star Users Votes (%)', 'Betting Odds', "Date", 'Difference']]
+    latest_date = merged_df["Date"].iloc[0]
+    merged_df = merged_df[["Movie Name", 'Experts Votes (%)', 'GoldDerby Users Votes (%)', 'All Star Users Votes (%)', 'Betting Odds', 'Difference (Betting Odds vs. All Star)']]
     table_html = merged_df.to_html(classes='data', index=False, escape=False)
-    return render_template('win_votes.html', table=table_html)
+    return render_template('win_votes.html', table=table_html, latest_date=latest_date)
 
 @app.route('/movie/<movie_name>')
 def movie_page(movie_name):

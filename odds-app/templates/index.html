@@ -1,36 +1,39 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/2.1.8/css/dataTables.dataTables.min.css">
-    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    <script type="text/javascript" charset="utf8" src="//cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
-</head>
-<body>
-    <h2>Movies Betting and Probabilities</h2>
-    <h4>
-        Last updated:
-    </h4>
-    <div>
-        <p>
-            The probabilities below (Experts, GoldDerby Users, All Star Users) are implied probabilities based on the odds calculated by GoldDerby.
-        </p>
+{% extends "base.html" %}
+
+{% block title %}GoldDerby Odds vs Betting Odds{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/2.1.8/css/dataTables.dataTables.min.css">
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center">GoldDerby Odds vs Betting Odds</h2>
+    <p class="text-muted text-center">Last updated: {{ latest_date }}</p>
+    <div class="alert alert-info" role="alert">
+        The probabilities below (Experts, GoldDerby Users, All Star Users) are implied probabilities based on the odds calculated by GoldDerby.
     </div>
-    <div>
-    {{ table | safe | replace('\n', '') }}
+
+    <div class="table-responsive">
+        {{ table | safe }}
     </div>
-    <script>
-        $(document).ready(function() {
-            $('.data').DataTable({
-                "createdRow": function(row, data, dataIndex){
-                    var diff = parseFloat(data[data.length - 1]);
-                    if (diff > 10) {
-                        $(row).find('td:eq(' + (data.length - 1) + ')').css('background-color', 'red').css('color', 'white');
-                    } else if (diff < -10) {
-                        $(row).find('td:eq(' + (data.length - 1) + ')').css('background-color', 'green').css('color', 'white');
-                    }
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('.data').DataTable({
+            "createdRow": function(row, data, dataIndex) {
+                var diff = parseFloat(data[data.length - 1]);
+                if (diff > 10) {
+                    $(row).find('td:eq(' + (data.length - 1) + ')').css('background-color', 'red').css('color', 'white');
+                } else if (diff < -10) {
+                    $(row).find('td:eq(' + (data.length - 1) + ')').css('background-color', 'green').css('color', 'white');
                 }
-            });
+            }
         });
-    </script>
-</body>
-</html>
+    });
+</script>
+{% endblock %}
