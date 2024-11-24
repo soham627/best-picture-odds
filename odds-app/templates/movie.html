@@ -10,32 +10,53 @@
 {% block content %}
 
 <body>
-    <h2>{{ movie_stats['Movie Name'] }}</h2>
-    <p><strong>Director:</strong> {{ movie_stats['Director'] }}</p>
-    <p><strong>Released:</strong> {{ movie_stats['Released'] }}</p>
-    <p><strong>Actors:</strong> {{ movie_stats['Actors'] }}</p>
-    <p><strong>Plot:</strong> {{ movie_stats['Plot'] }}</p>
+    <div class="container my-5">
+    <div class="row">
+        <div class="col-md-4 text-center">
+            <h2>{{ movie_stats['Movie Name'] }}</h2>
+            <div class="poster">
+                {% if movie_stats.Poster %}
+                    <img src="{{ movie_stats.Poster }}" alt="{{ movie_stats['Movie Name'] }} Poster" class="img-fluid rounded">
+                {% else %}
+                    <p>No poster available for this movie.</p>
+                {% endif %}
+            </div>
+        </div>
 
-    <div id="chart"></div>
+        <div class="col-md-8">
+            <p><strong>Director:</strong> {{ movie_stats['Director'] }}</p>
+            <p><strong>Released:</strong> {{ movie_stats['Released'] }}</p>
+            <p><strong>Actors:</strong> {{ movie_stats['Actors'] }}</p>
+            <p><strong>Plot:</strong> {{ movie_stats['Plot'] }}</p>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div id="chart"></div>
+        </div>
+    </div>
+</div>
+
 
     <script>
         const chartData = {{ chart_data | safe }};
 
         const expertTrend = {
             x: chartData.map(row => row.Date),
-            y: chartData.map(row => row.imp_prob_expert),
+            y: chartData.map(row => row.pct_vote_expert),
             mode: 'lines',
             name: 'Experts Probability'
         };
         const userTrend = {
             x: chartData.map(row => row.Date),
-            y: chartData.map(row => row.imp_prob_user),
+            y: chartData.map(row => row.pct_vote_user),
             mode: 'lines',
             name: 'Users Probability'
         };
         const star24Trend = {
             x: chartData.map(row => row.Date),
-            y: chartData.map(row => row.imp_prob_star24),
+            y: chartData.map(row => row.pct_vote_star24),
             mode: 'lines',
             name: 'Star24 Probability'
         };
@@ -47,7 +68,7 @@
         };
 
         const layout = {
-            title: 'Implied Probabilities Over Time',
+            title: 'Win Probability (Based on Voting Percentages)',
             xaxis: { title: 'Date' },
             yaxis: { title: 'Probability (%)' }
         };

@@ -24,13 +24,31 @@
 
 <script>
     $(document).ready(function() {
+        $.fn.dataTable.ext.type.order['num-unavailable-pre'] = function(data) {
+            // Check if the value is "Unavailable"
+            if (data === 'Unavailable') {
+                return Number.NEGATIVE_INFINITY;
+            }
+            // Parse the value as a float
+            return parseFloat(data.replace(/[^-0-9.]/g, '')) || 0;
+        };
+
+
         $('.data').DataTable({
+            "columnDefs": [
+                {
+                    "targets": 5,
+                    "type": "num-unavailable"
+                }
+            ],
+            "order": [[5, "desc"]],
             "createdRow": function(row, data, dataIndex) {
-                var diff = parseFloat(data[data.length - 1]);
-                if (diff > 10) {
-                    $(row).find('td:eq(' + (data.length - 1) + ')').css('background-color', 'red').css('color', 'white');
-                } else if (diff < -10) {
-                    $(row).find('td:eq(' + (data.length - 1) + ')').css('background-color', 'green').css('color', 'white');
+
+                var diff = parseFloat(data[5]);
+                if (diff > 5) {
+                    $(row).find('td:eq(5)').css('background-color', 'green').css('color', 'white');
+                } else if (diff < -5) {
+                    $(row).find('td:eq(5)').css('background-color', 'red').css('color', 'white');
                 }
             }
         });

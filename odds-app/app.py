@@ -112,7 +112,7 @@ def movie_page(movie_name):
         return "Movie not found", 404
 
     probabilities_query = f"""
-        SELECT "Date", "imp_prob_expert", "imp_prob_user", "imp_prob_star24", "betting_pct"
+        SELECT "Date", "pct_vote_expert", "pct_vote_user", "pct_vote_star24", "betting_pct"
         FROM goldderby
         WHERE "Movie Name" = %s
         ORDER BY "Date"
