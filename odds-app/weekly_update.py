@@ -86,7 +86,7 @@ def find_movies(url, movies_df):
 # URLs for each category
 base_urls = {
     'Experts': "https://www.goldderby.com/odds/expert-odds/oscars-nominations-2025-predictions/",
-    'Star24': "https://www.goldderby.com/odds/star24-odds/oscars-nominations-2025-predictions/",
+    'Star24': "https://www.goldderby.com/odds/top24-odds/oscars-nominations-2025-predictions/",
     'Users': "https://www.goldderby.com/odds/user-odds/oscars-nominations-2025-predictions/"
 }
 
