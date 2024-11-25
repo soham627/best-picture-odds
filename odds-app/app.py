@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 import pandas as pd
 import requests
+from datetime import datetime
 
 load_dotenv()
 
@@ -189,7 +190,7 @@ def movie_page(movie_name):
                 "title": article["title"],
                 "url": article["url"],
                 "description": article.get("description", "No description available."),
-                "publishedAt": article["publishedAt"]
+                "publishedAt": datetime.strptime(article["publishedAt"], "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d")
             }
             for article in raw_articles
             if movie_name.lower() in article["title"].lower()

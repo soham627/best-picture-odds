@@ -28,12 +28,8 @@
             <p><strong>Released:</strong> {{ movie_stats['Released'] }}</p>
             <p><strong>Actors:</strong> {{ movie_stats['Actors'] }}</p>
             <p><strong>Plot:</strong> {{ movie_stats['Plot'] }}</p>
-        </div>
-    </div>
 
-          <hr>
-
-    <h3>Latest News</h3>
+            <h3>Latest News</h3>
     <div class="list-group">
         {% if articles %}
             {% for article in articles %}
@@ -47,8 +43,10 @@
             <p>No news articles available for this movie.</p>
         {% endif %}
     </div>
+        </div>
+    </div>
 
-    <hr>
+          <hr>
 
     <div class="row mt-5">
         <div class="col-12">
