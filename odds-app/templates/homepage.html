@@ -4,24 +4,26 @@
 
 {% block content %}
 <div class="container my-5">
-    <h2 class="text-center">Top 3 Movies Based on All Star Votes</h2>
+    <h2 class="text-center">Current Frontrunners for Best Picture</h2>
     <div class="row justify-content-center">
         {% for movie in movies %}
         <div class="col-md-4">
+            <a href="/movie/{{ movie['Movie Name'] }}" class="text-decoration-none">
             <div class="card mb-4">
                 {% if movie.Poster %}
-                <img src="{{ movie.Poster }}" class="card-img-top" alt="{{ movie['Movie Name'] }} Poster">
+                <img src="{{ movie.Poster }}" class="card-img" alt="{{ movie['Movie Name'] }} Poster">
                 {% else %}
                 <div class="card-img-top text-center p-5 bg-light">No Poster Available</div>
                 {% endif %}
                 <div class="card-body">
                     <h5 class="card-title text-center">{{ movie['Movie Name'] }}</h5>
                     <p class="card-text">
-                        <strong>Star24 Votes:</strong> {{ movie['pct_vote_star24'] }}%<br>
+                        <strong>GoldDerby All Star User Votes:</strong> {{ movie['pct_vote_star24'] }}%<br>
                         <strong>Betting Odds:</strong> {{ movie['betting_pct'] }}%
                     </p>
                 </div>
             </div>
+            </a>
         </div>
         {% endfor %}
     </div>
