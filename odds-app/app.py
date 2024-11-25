@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 from dotenv import load_dotenv
 import pandas as pd
+import requests
+import feedparser
 
 load_dotenv()
 
@@ -120,7 +122,36 @@ def movie_page(movie_name):
     probabilities_df = pd.read_sql(probabilities_query, db.engine, params=[(movie_name,)])
     probabilities_json = probabilities_df.to_json(orient='records')
 
-    return render_template('movie.html', movie_stats=movie_stats_df.iloc[0], chart_data=probabilities_json)
+    url = "https://newsapi.org/v2/everything"
+    params = {
+        "q": f'{movie_name} movie',
+        "apiKey": os.getenv("NEWS_API_KEY"),
+        "language": "en",
+        "sortBy": "publishedAt",
+        "pageSize": 10,
+    }
+
+    response = requests.get(url, params=params)
+
+    if response.status_code == 200:
+        raw_articles = response.json().get("articles", [])
+        relevant_articles = [
+            {
+                "title": article["title"],
+                "url": article["url"],
+                "description": article.get("description", "No description available."),
+                "publishedAt": article["publishedAt"]
+            }
+            for article in raw_articles
+            if movie_name.lower() in article["title"].lower()
+        ]
+
+        simplified_articles = relevant_articles[:3]
+
+    else:
+        print(f"Failed to fetch news for {movie_name}: {response.status_code}")
+
+    return render_template('movie.html', movie_stats=movie_stats_df.iloc[0], chart_data=probabilities_json, articles = simplified_articles)
 
 
 
