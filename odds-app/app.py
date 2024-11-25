@@ -4,7 +4,6 @@ import os
 from dotenv import load_dotenv
 import pandas as pd
 import requests
-import feedparser
 
 load_dotenv()
 
@@ -163,6 +162,7 @@ def movie_page(movie_name):
 
     if response.status_code == 200:
         raw_articles = response.json().get("articles", [])
+        # narrowing down the articles fetched from News API to only include articles where the movie is mentioned in the title of the article
         relevant_articles = [
             {
                 "title": article["title"],
