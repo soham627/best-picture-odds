@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}About - Movie Odds{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center mb-4">About This App</h2>
+
+    <div class="mb-4">
+        <h4>What is GoldDerby?</h4>
+        <p>
+            GoldDerby is a platform that allows users to predict the winners of various entertainment awards,
+            including the Oscars, Emmys, and Grammys. It features predictions from a variety of groups:
+            industry experts, top-performing users, and its broader user base.
+        </p>
+    </div>
+
+    <div class="mb-4">
+        <h4>The Three Groups of GoldDerby Voters</h4>
+        <ul>
+            <li><strong>Experts:</strong> Hollywood industry journalists and insiders who are well-versed in awards season trends and likely outcomes.</li>
+            <li><strong>All Star 24 Users:</strong> A group of the 24 users with the best record of predicting Oscar winners over the last two years. These users are among the most reliable predictors on the platform.</li>
+            <li><strong>All GoldDerby Users:</strong> The general user base, consisting of anyone who has signed up for an account on GoldDerby. This group provides a wider range of perspectives.</li>
+        </ul>
+    </div>
+
+    <div class="mb-4">
+        <h4>Betting Odds</h4>
+        <p>
+            This app also incorporates betting odds sourced from the website <a href="https://www.oddschecker.com" target="_blank">OddsChecker</a>.
+            These odds are determined by betting markets, which can reflect broader public sentiment as well as professional insights.
+        </p>
+    </div>
+
+    <div class="mb-4">
+        <h4>Key Features</h4>
+        <ul>
+            <li>
+                <strong><a href="/movies-odds">Movie Odds</a>:</strong> A page that compares betting odds to GoldDerby’s own odds (calculated using an unclear methodology). 
+                This provides an interesting view of how betting markets diverge from GoldDerby’s predictions.
+            </li>
+            <li>
+                <strong><a href="/win_votes_table">Betting Odds vs. All Star 24 Users</a>:</strong> A page that compares betting odds with the percentage of votes received by each movie
+                from GoldDerby’s All Star 24 Users. This feature can be particularly useful, as it leverages predictions from a group of individuals 
+                with a proven track record of accurately forecasting awards outcomes.
+            </li>
+        </ul>
+    </div>
+
+</div>
+{% endblock %}

@@ -42,6 +42,9 @@ def homepage():
 
     return render_template('homepage.html', movies=top_movies_data)
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 
 @app.route('/movies-odds')
@@ -177,7 +180,7 @@ def movie_page(movie_name):
         "apiKey": os.getenv("NEWS_API_KEY"),
         "language": "en",
         "sortBy": "publishedAt",
-        "pageSize": 10,
+        "pageSize": 20,
     }
 
     response = requests.get(url, params=params)
