@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 import os
 from dotenv import load_dotenv
 import pandas as pd
@@ -23,6 +24,26 @@ db = SQLAlchemy(app)
 omdb_api_key = os.environ.get('OMDB_API_KEY')
 
 @app.route('/')
+def homepage():
+    # Finds the top 3 movies based on Goldderby all star users' votes
+    query = """
+        SELECT ms."Movie Name", ms."Poster", gd.pct_vote_star24, gd.betting_pct
+        FROM movie_stats ms
+        JOIN goldderby gd ON ms."Movie Name" = gd."Movie Name"
+        WHERE gd."Date" = (SELECT MAX("Date") FROM goldderby)
+        ORDER BY gd.pct_vote_star24 DESC
+        LIMIT 3
+    """
+    top_movies = pd.read_sql(text(query), db.engine)
+
+    # converts to dictionary which is then used in the homepage template
+    top_movies_data = top_movies.to_dict(orient='records')
+
+    return render_template('homepage.html', movies=top_movies_data)
+
+
+
+@app.route('/movies-odds')
 def index():
     """
     Displays the movie betting odds table
