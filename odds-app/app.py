@@ -11,6 +11,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config['ENV'] = os.getenv('FLASK_ENV', 'production')
 
+# configuring database URI to use psycopg instead of psycopg2
 uri = os.environ.get('DATABASE_URL')
 if uri and uri.startswith("postgresql://"):
     uri = uri.replace("postgresql://", 'postgresql+psycopg://', 1)
@@ -24,9 +25,13 @@ omdb_api_key = os.environ.get('OMDB_API_KEY')
 
 @app.route('/')
 def index():
+    """
+    Displays the movie betting odds table
+    """
     movie_stats_query = "SELECT * FROM movie_stats"
     movie_stats_df = pd.read_sql(movie_stats_query, db.engine)
 
+    # query the db for the latest odds data
     goldderby_query = """
             SELECT "Movie Name", imp_prob_expert, imp_prob_user, imp_prob_star24, betting_pct, "Date"
             FROM goldderby
@@ -36,29 +41,37 @@ def index():
 
     merged_df = pd.merge(movie_stats_df, goldderby_df, left_on="Movie Name", right_on="Movie Name", how="inner")
 
+    # replacing movies that don't have odds with 'Unavailable' label
     def format_value(value):
         if pd.isna(value):
             return "Unavailable"
         return int(value)
 
+    # Turning integer values into percentages
     def to_pct(value):
         if isinstance(value, int):
             return f"{value}%"
         return value
 
 
+    # applying the above functions to clean the betting percentage and 'Difference' columns
     merged_df['betting_pct'] = merged_df['betting_pct'].apply(format_value)
     merged_df['Difference'] = merged_df['imp_prob_star24'].fillna(0) - merged_df['betting_pct'].replace("Unavailable",0)
     merged_df['Difference (Betting Odds vs. All Star)'] = merged_df.apply(
         lambda row: "Unavailable" if row['betting_pct'] == "Unavailable" or pd.isna(row['imp_prob_star24']) else row[
             'Difference'],axis=1)
 
+    # movie name links to the movie's stats page
     merged_df['Movie Name'] = merged_df['Movie Name'].apply(lambda x: f'<a href="/movie/{x}">{x}</a>')
+
+    # converting odds to percentages
     merged_df['Experts Odds'] = merged_df['imp_prob_expert'].apply(to_pct)
     merged_df['GoldDerby Users Odds'] = merged_df['imp_prob_user'].apply(to_pct)
     merged_df['All Star Users Odds'] = merged_df['imp_prob_star24'].apply(to_pct)
     merged_df['Betting Odds'] = merged_df['betting_pct'].apply(to_pct)
+
     latest_date = merged_df["Date"].iloc[0]
+
     merged_df = merged_df[["Movie Name", 'Experts Odds', 'GoldDerby Users Odds', 'All Star Users Odds', 'Betting Odds', 'Difference (Betting Odds vs. All Star)']]
     table_html = merged_df.to_html(classes='data', index=False, escape=False)
 
@@ -66,9 +79,13 @@ def index():
 
 @app.route('/win_votes_table')
 def win_votes_table():
+    """
+    Displays the movie odds table that compares online betting odds to the percentage of voters who expect a movie to win
+    """
     movie_stats_query = "SELECT * FROM movie_stats"
     movie_stats_df = pd.read_sql(movie_stats_query, db.engine)
 
+    # instead of using goldderby's odds to compare to the betting odds, this table uses the % of voters who expect a movie to win as a proxy for the odds
     goldderby_query = """
             SELECT "Movie Name", pct_vote_expert, pct_vote_user, pct_vote_star24, betting_pct, "Date"
             FROM goldderby
@@ -78,35 +95,45 @@ def win_votes_table():
 
     merged_df = pd.merge(movie_stats_df, goldderby_df, left_on="Movie Name", right_on="Movie Name", how="inner")
 
+    # replacing movies that don't have odds with 'Unavailable' label
     def format_value(value):
         if pd.isna(value):
             return "Unavailable"
         return int(value)
 
+    # Turning integer values into percentages
     def to_pct(value):
         if isinstance(value, int):
             return f"{value}%"
         return value
 
-
+    # applying the above functions to clean the betting percentage and 'Difference' columns
     merged_df['betting_pct'] = merged_df['betting_pct'].apply(format_value)
     merged_df['Difference'] = merged_df['pct_vote_star24'].fillna(0) - merged_df['betting_pct'].replace("Unavailable",0)
     merged_df['Difference (Betting Odds vs. All Star)'] = merged_df.apply(
         lambda row: "Unavailable" if row['betting_pct'] == "Unavailable" or pd.isna(row['pct_vote_star24']) else row[
             'Difference'],axis=1)
 
+    # movie name links to the movie's stats page
     merged_df['Movie Name'] = merged_df['Movie Name'].apply(lambda x: f'<a href="/movie/{x}">{x}</a>')
+
+    # converting odds to percentages
     merged_df['Experts Votes (%)'] = merged_df['pct_vote_expert'].apply(to_pct)
     merged_df['GoldDerby Users Votes (%)'] = merged_df['pct_vote_user'].apply(to_pct)
     merged_df['All Star Users Votes (%)'] = merged_df['pct_vote_star24'].apply(to_pct)
     merged_df['Betting Odds'] = merged_df['betting_pct'].apply(to_pct)
+
     latest_date = merged_df["Date"].iloc[0]
+
     merged_df = merged_df[["Movie Name", 'Experts Votes (%)', 'GoldDerby Users Votes (%)', 'All Star Users Votes (%)', 'Betting Odds', 'Difference (Betting Odds vs. All Star)']]
     table_html = merged_df.to_html(classes='data', index=False, escape=False)
     return render_template('win_votes.html', table=table_html, latest_date=latest_date)
 
 @app.route('/movie/<movie_name>')
 def movie_page(movie_name):
+    """
+    Extracts the stats and charts for a particular movie to be used in the individual movie pages
+    """
     movie_stats_query = f'SELECT * FROM movie_stats WHERE "Movie Name" = %s'
     movie_stats_df = pd.read_sql(movie_stats_query, db.engine, params=[(movie_name,)])
 
@@ -122,6 +149,7 @@ def movie_page(movie_name):
     probabilities_df = pd.read_sql(probabilities_query, db.engine, params=[(movie_name,)])
     probabilities_json = probabilities_df.to_json(orient='records')
 
+    # getting the latest news about the movie from the News API
     url = "https://newsapi.org/v2/everything"
     params = {
         "q": f'{movie_name} movie',
@@ -149,7 +177,7 @@ def movie_page(movie_name):
         simplified_articles = relevant_articles[:3]
 
     else:
-        print(f"Failed to fetch news for {movie_name}: {response.status_code}")
+        print(f"Failed to fetch news for {movie_name}")
 
     return render_template('movie.html', movie_stats=movie_stats_df.iloc[0], chart_data=probabilities_json, articles = simplified_articles)
 
