@@ -10,18 +10,27 @@ load_dotenv()
 engine = create_engine(os.getenv('DATABASE_URL').replace('postgresql://', 'postgresql+psycopg://'))
 
 def odds_clean(odds):
+    """
+    Some odds on the betting website end in '-', this function cleans those up
+    """
     if odds[-1] == "-":
         return odds[:-1]
     else:
         return odds
 
 def calculate_pct_votes(df, vote_column, date_column='Date'):
+    '''
+    Given a certain date and a group of voters, calculates the percentage of voters who predicted a particular movie to win on that date
+    '''
     total_votes_per_date = df.groupby(date_column)[vote_column].transform('sum')
     pct_votes = (df[vote_column] / total_votes_per_date * 100).round().astype(int)
     return pct_votes
 
 
 def odds_to_prob(odds):
+    '''
+    Converts fractional odds to percentage odds
+    '''
     try:
         if '/' in odds:
             vals = odds.split('/')
@@ -38,7 +47,13 @@ def odds_to_prob(odds):
 
 
 def find_movies(url, movies_df):
+    '''
+    Scrapes Goldderby Best Picture odds pages to extract epxerts, all-star users, and all users' votes on Best Picture winners
+    '''
+
     movie_names = set(movies_df['Movie Name'].tolist())
+
+    # setting up scraper
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
     }
@@ -46,6 +61,7 @@ def find_movies(url, movies_df):
     html_content = response.text
     soup = BeautifulSoup(html_content, 'html.parser')
 
+    # finding section in the page's html with the movie odds data
     odds_page = soup.find('div', id='odds-page')
     if not odds_page:
         return None
@@ -64,6 +80,7 @@ def find_movies(url, movies_df):
         return None
 
     movies_and_predictions = []
+    # locates each movie and appends its details (name, votes, odds) to a list
     for item in predictions_list.find_all('li'):
         movie_name = item.find('div', class_='predictions-name').get_text(strip=True)
         if movie_name in movie_names:
@@ -90,16 +107,15 @@ base_urls = {
     'Users': "https://www.goldderby.com/odds/user-odds/oscars-nominations-2025-predictions/"
 }
 
-# Load movies list
 movies_df = pd.read_csv('movies_df.csv')
 
-# Scrape data
+# scrape data
 all_data = []
 data_experts = find_movies(base_urls['Experts'], movies_df) or []
 data_star24 = find_movies(base_urls['Star24'], movies_df) or []
 data_users = find_movies(base_urls['Users'], movies_df) or []
 
-# Process combined data
+# process combined data
 combined_data = {}
 for movie in data_experts:
     combined_data[movie['Movie Name']] = {
@@ -147,7 +163,7 @@ for movie in data_users:
 
 all_data.extend(combined_data.values())
 
-# Create df and calculate percentages and implied probabilities
+# create df and calculate percentages and implied probabilities
 weekly_df = pd.DataFrame(all_data)
 weekly_df['pct_vote_expert'] = calculate_pct_votes(weekly_df, 'Experts Vote')
 weekly_df['pct_vote_star24'] = calculate_pct_votes(weekly_df, 'Star24 Vote')
@@ -178,6 +194,7 @@ else:
 
 soup = BeautifulSoup(browser_html, 'html.parser')
 
+# mapping the titles for movies whose names differ across the betting website and Goldderby
 title_mapping = {
     'Joker: Folie à Deux': 'Joker: Folie a Deux',
     'Gladiator II': 'Gladiator 2',
@@ -185,20 +202,25 @@ title_mapping = {
     'Saturday Night': 'SNL: 1975'
 }
 
+
 def find_odds_for_movie(movie_name, soup):
+    '''
+    Given a movie name, finds the best odds for that movie to win Best Picture on the betting site
+    '''
+
     betting_title = title_mapping.get(movie_name, movie_name)
     movie_tag = soup.find('span', {'data-name': betting_title})
 
 
     if not movie_tag:
-        print(f"Warning: Movie '{movie_name}' with betting title '{betting_title}' not found in HTML.")
+        print(f"Warning: Movie '{movie_name}' with betting title '{betting_title}' not found")
         return None
 
     ew_tag = movie_tag.find_next(
         lambda tag: tag.name == 'td' and tag.has_attr('data-best-ew') and tag['data-best-ew'] == 'true')
 
     if not ew_tag:
-        print(f"Warning: data-best-ew='true' not found for movie '{movie_name}'.")
+        print(f"Warning: data-best-ew='true' not found for '{movie_name}'.")
         return None
 
 
@@ -210,11 +232,12 @@ def find_odds_for_movie(movie_name, soup):
 
     return odds_value
 
+# assign extracted data to a column in the weekly_df records
 weekly_df['betting_odds'] = weekly_df['Movie Name'].apply(lambda name: find_odds_for_movie(name, soup))
 weekly_df['betting_pct'] = weekly_df['betting_odds'].apply(lambda x: int(odds_to_prob(x)) if x != 'N/A' and odds_to_prob(x) is not None else None)
 
 
-# Save to database
+# save to db
 weekly_df.to_sql('goldderby', engine, if_exists='append', index=False)
 
 
