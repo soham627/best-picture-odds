@@ -49,7 +49,7 @@ def odds_to_prob(odds):
 
 def find_movies(url, movies_df):
     '''
-    Scrapes Goldderby Best Picture odds pages to extract epxerts, all-star users, and all users' votes on Best Picture winners
+    Scrapes Goldderby Best Picture odds pages to extract experts, all-star users, and all users' votes on Best Picture winners
     '''
 
     movie_names = set(movies_df['Movie Name'].tolist())
