@@ -48,4 +48,5 @@ Week 8:
 <br>
 Finalize the project by refining the UI/UX, testing data retrieval, and deploying the app
 <br>
+<br>
 Note about replicating: Replicating this app would require access to API keys for OMDB and News API. The app also queries the two SQL database tables, 'goldderby' and 'movie_stats' table, which I have uploaded in the SQL_table_files folder in the repo. Replicating this would still require a specific setup of postgres and converting those csv files to SQL tables on the machine you want to run the app on.
