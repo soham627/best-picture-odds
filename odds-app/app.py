@@ -23,10 +23,10 @@ else:
 app.config['SQLALCHEMY_DATABASE_URI'] = uri
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+print(app.config['SQLALCHEMY_DATABASE_URI'])
 db = SQLAlchemy(app)
 
-engine = create_engine(os.getenv('DATABASE_URL').replace('postgresql://', 'postgresql+psycopg://'))
+engine = create_engine(uri)
 
 omdb_api_key = os.environ.get('OMDB_API_KEY')
 
@@ -38,6 +38,7 @@ def get_news_for_movie(movie_name):
 
     if result:
         articles, last_updated = result
+        last_updated = datetime.strptime(last_updated, "%Y-%m-%d %H:%M:%S.%f")
         if last_updated and (datetime.now() - last_updated) < timedelta(days=1):  # Update daily
             return json.loads(articles)
 
