@@ -3,23 +3,23 @@ Python-based app that compares Oscars Best Picture betting odds from popular bet
 
 Overview:
 <br>
-I love movies and every year, I compete with my friends to see which one of us can get the most predictions correct for the Oscar winners. Though I don’t do any sort of real betting, I thought it would be interesting to build an app that compares the betting odds for the Best Picture category at the Oscars from popular betting sites (using betting APIs like Betfair, Pinnacle, or OddsAPI) to expert predictions from the GoldDerby website (which is where anyone can enter their predictions for the Oscars. The app will highlight discrepancies between these two sources. For example, if experts give a film a high chance of winning (50%) but the betting odds suggest it’s a long shot (10%), the app will highlight these differences. 
+I love movies and every year, I compete with my friends to see which one of us can get the most predictions correct for the Oscar winners. Though I don’t do any sort of real betting, I thought it would be interesting to build an app that compares the betting odds for the Best Picture category at the Oscars from popular betting sites (using betting APIs like Betfair, Pinnacle, or OddsAPI) to expert predictions from the GoldDerby website (which is where anyone can enter their predictions for the Oscars. The app highlights discrepancies between these two sources. For example, if experts give a film a high chance of winning (50%) but the betting odds suggest it’s a long shot (10%), the app highlights these differences. 
 <br>
-In addition, for each Best Picture nominee, the app will:
+In addition, for each Best Picture nominee, the app:
 <br>
-Fetch movie stats (e.g., ratings, director, cast) from the OMDb or IMDb API
+Fetches movie stats (e.g., ratings, director, cast) from the OMDb or IMDb API
 <br>
-Pull the latest news article about the movie using the NewsAPI to give users more context around the awards buzz.
+Pulls the latest news article about the movie using the NewsAPI to give users more context around the awards buzz.
 <br>
 <br>
-Tools I’ll use:
-Betting API: Use Betfair, Pinnacle, or OddsAPI for betting odds.
+Tools I used:
+Betting API: Oddschecker for betting odds.
 <br>
 GoldDerby Predictions: Data scraping from GoldDerby for expert predictions
 <br>
-OMDb/IMDb API: for movie stats
+OMDb/IMDb API: For movie stats
 <br>
-NewsAPI: to find and display news articles related to each movie
+NewsAPI: To find and display news articles related to each movie
 <br><br>
 
 Execution Plan:
@@ -55,6 +55,6 @@ To replicate:
 2. Navigate to the odds-app folder
 3. Set up a virtual environment and install dependencies: pip install -r requirements.txt
 4. Create a .env file and copy the variables from the .env.example file into it
-5. Set up the database by running create_db.py
+5. Set up the database by running create_db.py. If the local.db file is created within a directory called 'instance', you may need to copy the local.db file into the odds-app folder for the app to function properly.
 6. Run the flask app
 
