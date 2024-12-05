@@ -16,6 +16,9 @@ app.config['ENV'] = os.getenv('FLASK_ENV', 'production')
 uri = os.environ.get('DATABASE_URL')
 if uri and uri.startswith("postgresql://"):
     uri = uri.replace("postgresql://", 'postgresql+psycopg://', 1)
+else:
+    uri = "sqlite:///local.db"
+
 app.config['SQLALCHEMY_DATABASE_URI'] = uri
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
