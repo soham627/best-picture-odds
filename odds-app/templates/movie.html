@@ -31,17 +31,20 @@
 
             <h3>Latest News</h3>
     <div class="list-group">
-        {% if articles %}
-            {% for article in articles %}
-                <a href="{{ article.url }}" class="list-group-item list-group-item-action" target="_blank">
-                    <h5>{{ article.title }}</h5>
-                    <p class="mb-1">{{ article.description }}</p>
-                    <small class="text-muted">Published: {{ article.publishedAt }}</small>
-                </a>
-            {% endfor %}
-        {% else %}
-            <p>No news articles available for this movie.</p>
-        {% endif %}
+        {% if news %}
+    {% for article in news.articles %}
+        <a href="{{ article['url'] }}" class="list-group-item list-group-item-action" target="_blank">
+            <h5>{{ article['title'] }}</h5>
+            <p class="mb-1">{{ article['description'] }}</p>
+            <small class="text-muted">Published: {{ article['publishedAt'] }}</small>
+        </a>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info" role="alert">
+        No news articles available for this movie.
+    </div>
+{% endif %}
+
     </div>
         </div>
     </div>

@@ -1,11 +1,12 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
+from sqlalchemy import text, create_engine
 import os
 from dotenv import load_dotenv
 import pandas as pd
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
+import json
 
 load_dotenv()
 
@@ -25,7 +26,65 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+engine = create_engine(os.getenv('DATABASE_URL').replace('postgresql://', 'postgresql+psycopg://'))
+
 omdb_api_key = os.environ.get('OMDB_API_KEY')
+
+def get_news_for_movie(movie_name):
+    # check db for existing articles
+    query = text("SELECT articles, last_updated FROM movie_news WHERE movie_name = :movie_name")
+    with engine.connect() as conn:
+        result = conn.execute(query, {"movie_name": movie_name}).fetchone()
+
+    if result:
+        articles, last_updated = result
+        if last_updated and (datetime.now() - last_updated) < timedelta(days=1):  # Update daily
+            return json.loads(articles)
+
+    # Otherwise get from News API
+    url = "https://newsapi.org/v2/everything"
+    params = {
+        "q": f'{movie_name} movie',
+        "apiKey": os.getenv("NEWS_API_KEY"),
+        "language": "en",
+        "sortBy": "publishedAt",
+        "pageSize": 20,
+    }
+
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        raw_articles = response.json().get("articles", [])
+        relevant_articles = [
+            {
+                "title": article["title"],
+                "url": article["url"],
+                "description": article.get("description", "No description available."),
+                "publishedAt": datetime.strptime(article["publishedAt"], "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d")
+            }
+            for article in raw_articles
+            if movie_name.lower() in article["title"].lower()
+        ]
+
+        simplified_articles = relevant_articles[:3]
+
+        query_add = """
+            INSERT INTO movie_news (movie_name, articles, last_updated)
+            VALUES (:movie_name, :articles, :last_updated)
+            ON CONFLICT (movie_name)
+            DO UPDATE SET articles = EXCLUDED.articles, last_updated = EXCLUDED.last_updated
+        """
+        with engine.connect() as conn:
+            conn.execute(
+                text(query_add),
+                {
+                    "movie_name": movie_name,
+                    "articles": json.dumps(simplified_articles),
+                    "last_updated": datetime.now()
+                }
+            )
+        return simplified_articles
+    else:
+        return []
 
 @app.route('/')
 def homepage():
@@ -176,38 +235,10 @@ def movie_page(movie_name):
     probabilities_df = pd.read_sql(probabilities_query, db.engine, params={"movie_name": movie_name})
     probabilities_json = probabilities_df.to_json(orient='records')
 
-    # getting the latest news about the movie from the News API
-    url = "https://newsapi.org/v2/everything"
-    params = {
-        "q": f'{movie_name} movie',
-        "apiKey": os.getenv("NEWS_API_KEY"),
-        "language": "en",
-        "sortBy": "publishedAt",
-        "pageSize": 20,
-    }
+    # getting the latest news about the movie
+    articles = get_news_for_movie(movie_name)
 
-    response = requests.get(url, params=params)
-
-    if response.status_code == 200:
-        raw_articles = response.json().get("articles", [])
-        # narrowing down the articles fetched from News API to only include articles where the movie is mentioned in the title of the article
-        relevant_articles = [
-            {
-                "title": article["title"],
-                "url": article["url"],
-                "description": article.get("description", "No description available."),
-                "publishedAt": datetime.strptime(article["publishedAt"], "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d")
-            }
-            for article in raw_articles
-            if movie_name.lower() in article["title"].lower()
-        ]
-
-        simplified_articles = relevant_articles[:3]
-
-    else:
-        print(f"Failed to fetch news for {movie_name}")
-
-    return render_template('movie.html', movie_stats=movie_stats_df.iloc[0], chart_data=probabilities_json, articles = simplified_articles)
+    return render_template('movie.html', movie_stats=movie_stats_df.iloc[0], chart_data=probabilities_json, articles = articles)
 
 
 
