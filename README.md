@@ -49,4 +49,12 @@ Week 8:
 Finalize the project by refining the UI/UX, testing data retrieval, and deploying the app
 <br>
 <br>
-Note about replicating: Replicating this app would require access to API keys for OMDB and News API. The app also queries the two SQL database tables, 'goldderby' and 'movie_stats' table, which I have uploaded in the SQL_table_files folder in the repo. Replicating this would still require a specific setup of postgres and converting those csv files to SQL tables on the machine you want to run the app on.
+To replicate:
+<br>
+1. Clone the repo
+2. Navigate to the odds-app folder
+3. Set up a virtual environment and install dependencies: pip install -r requirements.txt
+4. Create a .env file and copy the variables from the .env.example file into it
+5. Set up the database by running create_db.py
+6. Run the flask app
+
