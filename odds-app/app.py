@@ -161,8 +161,8 @@ def movie_page(movie_name):
     """
     Extracts the stats and charts for a particular movie to be used in the individual movie pages
     """
-    movie_stats_query = f'SELECT * FROM movie_stats WHERE "Movie Name" = %s'
-    movie_stats_df = pd.read_sql(movie_stats_query, db.engine, params=[(movie_name,)])
+    movie_stats_query = text("SELECT * FROM movie_stats WHERE \"Movie Name\" = :movie_name")
+    movie_stats_df = pd.read_sql(movie_stats_query, db.engine, params={"movie_name": movie_name})
 
     if movie_stats_df.empty:
         return "Movie not found", 404
@@ -170,10 +170,10 @@ def movie_page(movie_name):
     probabilities_query = f"""
         SELECT "Date", "pct_vote_expert", "pct_vote_user", "pct_vote_star24", "betting_pct"
         FROM goldderby
-        WHERE "Movie Name" = %s
+        WHERE "Movie Name" = :movie_name
         ORDER BY "Date"
     """
-    probabilities_df = pd.read_sql(probabilities_query, db.engine, params=[(movie_name,)])
+    probabilities_df = pd.read_sql(probabilities_query, db.engine, params={"movie_name": movie_name})
     probabilities_json = probabilities_df.to_json(orient='records')
 
     # getting the latest news about the movie from the News API
